@@ -7,6 +7,7 @@ export enum UploadMessage {
   SUCCESS_UPLOAD_IMAGE = 'Upload ảnh thành công',
   SUCCESS_UPLOAD_VIDEO = 'Upload video thành công',
   SUCCESS_UPLOAD_AVATAR = 'Upload avatar thành công',
+  SUCCESS_DELETE_UPLOAD = 'Xóa upload thành công',
 
   // Error messages
   ERROR_NO_FILE = 'Không có file được gửi lên',
@@ -15,6 +16,7 @@ export enum UploadMessage {
   ERROR_UPLOAD_FAILED = 'Lỗi khi upload file',
   ERROR_INVALID_IMAGE_TYPE = 'Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp)',
   ERROR_INVALID_VIDEO_TYPE = 'Chỉ chấp nhận file video (mp4, avi, mov, wmv, flv, mkv)',
+  ERROR_UPLOAD_NOT_FOUND = 'Không tìm thấy bản ghi upload',
 }
 
 export enum UploadErrorCode {
@@ -23,4 +25,11 @@ export enum UploadErrorCode {
   FILE_TOO_LARGE = 'FILE_TOO_LARGE',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   UPLOAD_FAILED = 'UPLOAD_ERROR',
+}
+
+export enum UploadResourceType {
+  IMAGE = 'image',
+  VIDEO = 'video',
+  FILE = 'file',
+  AVATAR = 'avatar',
 }

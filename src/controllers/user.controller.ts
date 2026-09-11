@@ -31,6 +31,25 @@ const userController = {
     }
   },
 
+  async searchUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const username = typeof req.query.username === 'string' ? req.query.username : '';
+      const users = await userService.searchUserByUsername(username);
+      sendSuccess(res, users, 'Users searched successfully');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getFriends(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const friends = await userService.getFriends(req.params.userId);
+      sendSuccess(res, friends, 'Friends fetched successfully');
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async createUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const user = await userService.createUser(req.body as CreateUserRequest);

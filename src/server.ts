@@ -1,6 +1,8 @@
+import http from 'http';
 import app from './app.js';
 import connectDatabase from './config/database.js';
 import { connectRedis, closeRedis, isRedisConnected } from './config/redis.js';
+import { initSocket } from './config/socket.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -14,13 +16,16 @@ const startServer = async (): Promise<void> => {
     console.warn('⚠️ Redis unavailable, server will start without cache');
   }
 
-  const server = app.listen(PORT, () => {
+  const server = http.createServer(app);
+  const io = initSocket(server);
+
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT} in ${NODE_ENV} mode`);
   });
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
     console.log(`\n${signal} received. Shutting down gracefully...`);
-    server.close(async () => {
+    io.close(async () => {
       try {
         if (isRedisConnected()) {
           await closeRedis();

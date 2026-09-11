@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import catalogService from '../services/catalog.service.js';
 import { sendSuccess } from '../utils/response.js';
+import { AuthenticatedRequest } from '../middlewares/auth.js';
 import { CreateCatalogRequest, UpdateCatalogRequest } from '../types/index.js';
 
 const catalogController = {
@@ -31,18 +32,32 @@ const catalogController = {
     }
   },
 
-  async updateCatalog(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateCatalog(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const catalog = await catalogService.updateCatalog(req.params.id, req.body as UpdateCatalogRequest);
+      const requesterId = req.user?.userId;
+      if (!requesterId) {
+        throw new Error('Unauthenticated');
+      }
+
+      const catalog = await catalogService.updateCatalog(
+        req.params.id,
+        req.body as UpdateCatalogRequest,
+        requesterId,
+      );
       sendSuccess(res, catalog, 'Catalog updated successfully');
     } catch (error) {
       next(error);
     }
   },
 
-  async deleteCatalog(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteCatalog(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      await catalogService.deleteCatalog(req.params.id);
+      const requesterId = req.user?.userId;
+      if (!requesterId) {
+        throw new Error('Unauthenticated');
+      }
+
+      await catalogService.deleteCatalog(req.params.id, requesterId);
       sendSuccess(res, null, 'Catalog deleted successfully');
     } catch (error) {
       next(error);

@@ -1,7 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from 'dotenv';
 import { InternalServerError } from '../utils/ApiError.js';
-import { UploadErrorCode } from '../types/upload/enums.js';
+import { UploadErrorCode, UploadResourceType } from '../types/upload/enums.js';
+import { CloudinaryUploadResult } from '../types/upload/request.js';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ cloudinary.config({
 export const uploadImage = async (
     base64Image: string,
     folder: string = 'images'
-): Promise<string> => {
+): Promise<CloudinaryUploadResult> => {
     try {
         const result = await cloudinary.uploader.upload(base64Image, {
             folder,
@@ -30,7 +31,13 @@ export const uploadImage = async (
                 { fetch_format: "auto" }
             ]
         });
-        return result.secure_url;
+        return {
+            url: result.secure_url,
+            publicId: result.public_id,
+            format: result.format || '',
+            size: result.bytes || 0,
+            resourceType: UploadResourceType.IMAGE,
+        };
     } catch (error: any) {
         console.error('Cloudinary upload image error:', error);
         throw new InternalServerError(
@@ -49,7 +56,7 @@ export const uploadImage = async (
 export const uploadMultipleImages = async (
     base64Images: string[],
     folder: string = 'images'
-): Promise<string[]> => {
+): Promise<CloudinaryUploadResult[]> => {
     try {
         const uploadPromises = base64Images.map(img =>
             cloudinary.uploader.upload(img, {
@@ -62,7 +69,13 @@ export const uploadMultipleImages = async (
             })
         );
         const results = await Promise.all(uploadPromises);
-        return results.map(r => r.secure_url);
+        return results.map(r => ({
+            url: r.secure_url,
+            publicId: r.public_id,
+            format: r.format || '',
+            size: r.bytes || 0,
+            resourceType: UploadResourceType.IMAGE,
+        }));
     } catch (error: any) {
         console.error('Cloudinary upload multiple images error:', error);
         throw new InternalServerError(
@@ -178,6 +191,22 @@ export const uploadFile = async (
 
         uploadStream.end(fileBuffer);
     });
+}
+
+/**
+ * Delete image from Cloudinary by public id
+ * @param publicId - Cloudinary public id
+ */
+export const deleteImage = async (publicId: string): Promise<void> => {
+    try {
+        await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+    } catch (error: any) {
+        console.error('Cloudinary delete image error:', error);
+        throw new InternalServerError(
+            'Xóa ảnh trên cloud thất bại',
+            UploadErrorCode.UPLOAD_FAILED
+        );
+    }
 }
 
 export default cloudinary;

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import voiceChannelService from '../services/voiceChannel.service.js';
 import { sendSuccess } from '../utils/response.js';
+import { AuthenticatedRequest } from '../middlewares/auth.js';
 import { CreateVoiceChannelRequest, UpdateVoiceChannelRequest } from '../types/index.js';
 
 const voiceChannelController = {
@@ -31,11 +32,17 @@ const voiceChannelController = {
     }
   },
 
-  async updateVoiceChannel(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateVoiceChannel(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const requesterId = req.user?.userId;
+      if (!requesterId) {
+        throw new Error('Unauthenticated');
+      }
+
       const channel = await voiceChannelService.updateVoiceChannel(
         req.params.id,
         req.body as UpdateVoiceChannelRequest,
+        requesterId,
       );
       sendSuccess(res, channel, 'Voice channel updated successfully');
     } catch (error) {
@@ -43,9 +50,14 @@ const voiceChannelController = {
     }
   },
 
-  async deleteVoiceChannel(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteVoiceChannel(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      await voiceChannelService.deleteVoiceChannel(req.params.id);
+      const requesterId = req.user?.userId;
+      if (!requesterId) {
+        throw new Error('Unauthenticated');
+      }
+
+      await voiceChannelService.deleteVoiceChannel(req.params.id, requesterId);
       sendSuccess(res, null, 'Voice channel deleted successfully');
     } catch (error) {
       next(error);

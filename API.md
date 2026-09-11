@@ -63,6 +63,8 @@ Base URL: `http://localhost:3000`
 | ------ | --- | ------ | ---- |
 | GET | http://localhost:3000/api/users | Lấy danh sách users | Không |
 | GET | http://localhost:3000/api/users/:id | Lấy user theo id | Không |
+| GET | http://localhost:3000/api/users/search?username=:username | Tìm kiếm user theo username (gần đúng, không phân biệt hoa thường) | Không |
+| GET | http://localhost:3000/api/users/:userId/friends | Lấy danh sách bạn bè của user | Không |
 | POST | http://localhost:3000/api/users | Tạo user mới | Không |
 | PATCH | http://localhost:3000/api/users/:id | Cập nhật user | Không |
 | DELETE | http://localhost:3000/api/users/:id | Xóa user | Không |
@@ -96,8 +98,10 @@ Base URL: `http://localhost:3000`
 | Method | URL | Mô tả | Auth |
 | ------ | --- | ------ | ---- |
 | GET | http://localhost:3000/api/servers | Lấy danh sách servers | Không |
+| GET | http://localhost:3000/api/servers/search?name=:name | Tìm kiếm server theo tên (gần đúng, không phân biệt hoa thường) | Không |
 | GET | http://localhost:3000/api/servers/:id | Lấy server theo id | Không |
 | POST | http://localhost:3000/api/servers | Tạo server mới | Không |
+| POST | http://localhost:3000/api/servers/:id/join | Tham gia server (cập nhật jointServer của User và memberIds của Server) | Không |
 | PATCH | http://localhost:3000/api/servers/:id | Cập nhật server | Không |
 | DELETE | http://localhost:3000/api/servers/:id | Xóa server | Không |
 
@@ -109,6 +113,13 @@ Base URL: `http://localhost:3000`
   "name": "string",
   "ownerId": "string (ObjectId)",
   "iconUrl": "string (optional)"
+}
+```
+
+**POST /api/servers/:id/join**
+```json
+{
+  "userId": "string (ObjectId)"
 }
 ```
 

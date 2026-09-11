@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: discord-remake-be
+    runtime: node
+    plan: free
+    region: singapore
+    branch: master
+    autoDeploy: true
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # MongoDB Atlas (M0 free)
+      - key: MONGODB_URL
+        sync: false
+      - key: DB_NAME
+        value: Discord_remake
+
+      # Upstash Redis (rediss://...)
+      - key: REDIS_URL
+        sync: false
+
+      # JWT
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRES_IN
+        value: 1d
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        value: 7d
+
+      # Domain cua FE tren Vercel, vi du: https://discord-fe.vercel.app
+      - key: CORS_ORIGIN
+        sync: false
+
+      # Cloudinary
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      # LiveKit Cloud (wss://<project>.livekit.cloud)
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: LIVEKIT_URL
+        sync: false
