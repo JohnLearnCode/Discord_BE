@@ -52,7 +52,12 @@ const friendshipService = {
       senderId: data.senderId,
       receiverId: data.receiverId,
       status: FriendshipStatus.PENDING,
-    });
+    }).then((friendship) =>
+      friendship.populate([
+        { path: 'senderId', select: 'username email avatarUrl' },
+        { path: 'receiverId', select: 'username email avatarUrl' },
+      ]),
+    );
   },
 
   async respondFriendRequest(id: string, data: UpdateFriendshipRequest): Promise<IFriendshipDocument> {
@@ -76,7 +81,10 @@ const friendshipService = {
     friendship.status = data.status;
     await friendship.save();
 
-    return friendship;
+    return friendship.populate([
+      { path: 'senderId', select: 'username email avatarUrl' },
+      { path: 'receiverId', select: 'username email avatarUrl' },
+    ]);
   },
 
   async deleteFriendship(id: string): Promise<IFriendshipDocument> {
@@ -94,6 +102,11 @@ const friendshipService = {
     }
 
     await FriendshipModel.findByIdAndDelete(id);
+
+    await friendship.populate([
+      { path: 'senderId', select: 'username email avatarUrl' },
+      { path: 'receiverId', select: 'username email avatarUrl' },
+    ]);
 
     return friendship;
   },

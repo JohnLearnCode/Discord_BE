@@ -10,3 +10,5 @@ export * from './voiceChannel/request.js';
 export * from './messageP2P/request.js';
 export * from './messageGroup/request.js';
 export * from './friendship/request.js';
+export * from './upload/request.js';
+export * from './upload/enums.js';

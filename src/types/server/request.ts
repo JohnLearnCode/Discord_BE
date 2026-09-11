@@ -32,3 +32,8 @@ export interface UpdateServerRequest {
   channelIds?: string[];
   catalogIds?: string[];
 }
+
+// Join Server Request
+export interface JoinServerRequest {
+  userId: string;
+}

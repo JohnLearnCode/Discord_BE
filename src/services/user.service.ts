@@ -26,6 +26,32 @@ const userService = {
     return user;
   },
 
+  async searchUserByUsername(username: string): Promise<IUserDocument[]> {
+    const term = username?.trim();
+    if (!term) {
+      return [];
+    }
+
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    return User.find({ username: { $regex: escaped, $options: 'i' } })
+      .select('-passwordHash')
+      .limit(20);
+  },
+
+  async getFriends(userId: string): Promise<IUserDocument[]> {
+    const user = await User.findById(userId).populate<{ friends: IUserDocument[] }>(
+      'friends',
+      '-passwordHash',
+    );
+
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    return user.friends;
+  },
+
   async createUser(data: CreateUserRequest): Promise<IUserDocument> {
     const existingUser = await User.findOne({
       $or: [{ username: data.username }, { email: data.email }],

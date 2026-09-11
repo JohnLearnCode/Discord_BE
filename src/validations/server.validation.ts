@@ -15,3 +15,7 @@ export const updateServerSchema = Joi.object({
   channelIds: Joi.array().items(objectIdSchema),
   catalogIds: Joi.array().items(objectIdSchema),
 }).min(1);
+
+export const joinServerSchema = Joi.object({
+  userId: objectIdSchema.required(),
+});

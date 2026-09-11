@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(npm:*)",
+      "Shell(powershell -NoProfile -Command \"try { (Invoke-RestMethod -Uri 'http://localhost:3000/api/health' -TimeoutSec 3) | ConvertTo-Json -Compress } catch { 'NOT_RUNNING' }\")",
+      "Shell(powershell -NoProfile -Command \"$s = Invoke-RestMethod 'http://localhost:3000/api/servers/search?name=a' -TimeoutSec 5; 'search success=' + $s.success + ' count=' + $s.data.Count; $s.data | Select-Object -First 3 _id,name | ConvertTo-Json -Compress\")",
+      "Shell(powershell -NoProfile -Command \"$r = Invoke-RestMethod 'http://localhost:3000/api/servers' -TimeoutSec 5; 'servers=' + $r.data.Count; $r.data | Select-Object -First 10 name,memberIds | ConvertTo-Json -Compress; $u = Invoke-RestMethod 'http://localhost:3000/api/users' -TimeoutSec 5; 'users=' + $u.data.Count; $u.data | Select-Object -First 10 _id,username,jointServer | ConvertTo-Json -Compress\")",
+      "Shell(powershell -NoProfile -Command \"$srv = (Invoke-RestMethod 'http://localhost:3000/api/servers').data | Select-Object -First 1; $sid = $srv._id; $bob = '6a9e44bfe117956ef9b85cb1'; $s = Invoke-RestMethod 'http://localhost:3000/api/servers/search?name=SV' -TimeoutSec 5; 'search(SV) count=' + $s.data.Count + ' name=' + $s.data[0].name; $body = @{ userId = $bob } | ConvertTo-Json; $j = Invoke-RestMethod -Method Post \\\"http://localhost:3000/api/servers/$sid/join\\\" -ContentType 'application/json' -Body $body -TimeoutSec 5; 'join success=' + $j.success + ' msg=' + $j.message + ' members=' + ($j.data.memberIds -join ','); $u = (Invoke-RestMethod \\\"http://localhost:3000/api/users/$bob\\\" -TimeoutSec 5).data; 'bob jointServer=' + ($u.jointServer -join ','); try { Invoke-RestMethod -Method Post \\\"http://localhost:3000/api/servers/$sid/join\\\" -ContentType 'application/json' -Body $body -TimeoutSec 5 | Out-Null; 'rejoin=NO_ERROR' } catch { 'rejoin status=' + [int]$_.Exception.Response.StatusCode }\")",
+      "Shell(powershell -NoProfile -Command \"$sid='6aa18e9a3963cfd3c40d6e20'; function T($label,$sidv,$uid){ try { $b=@{userId=$uid}|ConvertTo-Json; Invoke-RestMethod -Method Post \\\"http://localhost:3000/api/servers/$sidv/join\\\" -ContentType 'application/json' -Body $b -TimeoutSec 5 | Out-Null; \\\"$label = NO_ERROR\\\" } catch { \\\"$label status=\\\" + [int]$_.Exception.Response.StatusCode } }; T 'invalid userId' $sid 'abc'; T 'nonexistent userId' $sid '000000000000000000000000'; T 'nonexistent serverId' '000000000000000000000000' '6a9e44bfe117956ef9b85cb0'\")",
+      "powershell"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

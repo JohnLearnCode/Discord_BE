@@ -8,6 +8,7 @@ import voiceChannelRoutes from './voiceChannel.routes.js';
 import messageP2PRoutes from './messageP2P.routes.js';
 import messageGroupRoutes from './messageGroup.routes.js';
 import friendshipRoutes from './friendship.routes.js';
+import uploadRoutes from './upload.routes.js';
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use('/voice-channels', voiceChannelRoutes);
 router.use('/messages-p2p', messageP2PRoutes);
 router.use('/messages-group', messageGroupRoutes);
 router.use('/friendships', friendshipRoutes);
+router.use('/uploads', uploadRoutes);
 
 export default router;

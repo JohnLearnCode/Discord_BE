@@ -1,5 +1,6 @@
 import TextChannelModel, { ITextChannelDocument } from '../models/textChannel.model.js';
 import ApiError from '../utils/ApiError.js';
+import { assertServerOwner, findServerByChannel } from '../utils/ownership.js';
 import { CreateTextChannelRequest, UpdateTextChannelRequest } from '../types/index.js';
 
 const textChannelService = {
@@ -21,7 +22,13 @@ const textChannelService = {
     });
   },
 
-  async updateTextChannel(id: string, data: UpdateTextChannelRequest): Promise<ITextChannelDocument> {
+  async updateTextChannel(
+    id: string,
+    data: UpdateTextChannelRequest,
+    requesterId: string,
+  ): Promise<ITextChannelDocument> {
+    assertServerOwner(await findServerByChannel(id), requesterId, 'Text channel not found');
+
     const channel = await TextChannelModel.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
@@ -34,7 +41,9 @@ const textChannelService = {
     return channel;
   },
 
-  async deleteTextChannel(id: string): Promise<ITextChannelDocument> {
+  async deleteTextChannel(id: string, requesterId: string): Promise<ITextChannelDocument> {
+    assertServerOwner(await findServerByChannel(id), requesterId, 'Text channel not found');
+
     const channel = await TextChannelModel.findByIdAndDelete(id);
     if (!channel) {
       throw new ApiError(404, 'Text channel not found');

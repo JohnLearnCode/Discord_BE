@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import textChannelService from '../services/textChannel.service.js';
 import { sendSuccess } from '../utils/response.js';
+import { AuthenticatedRequest } from '../middlewares/auth.js';
 import { CreateTextChannelRequest, UpdateTextChannelRequest } from '../types/index.js';
 
 const textChannelController = {
@@ -31,11 +32,17 @@ const textChannelController = {
     }
   },
 
-  async updateTextChannel(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateTextChannel(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const requesterId = req.user?.userId;
+      if (!requesterId) {
+        throw new Error('Unauthenticated');
+      }
+
       const channel = await textChannelService.updateTextChannel(
         req.params.id,
         req.body as UpdateTextChannelRequest,
+        requesterId,
       );
       sendSuccess(res, channel, 'Text channel updated successfully');
     } catch (error) {
@@ -43,9 +50,14 @@ const textChannelController = {
     }
   },
 
-  async deleteTextChannel(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteTextChannel(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      await textChannelService.deleteTextChannel(req.params.id);
+      const requesterId = req.user?.userId;
+      if (!requesterId) {
+        throw new Error('Unauthenticated');
+      }
+
+      await textChannelService.deleteTextChannel(req.params.id, requesterId);
       sendSuccess(res, null, 'Text channel deleted successfully');
     } catch (error) {
       next(error);

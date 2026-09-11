@@ -1,5 +1,6 @@
 import VoiceChannelModel, { IVoiceChannelDocument } from '../models/voiceChannel.model.js';
 import ApiError from '../utils/ApiError.js';
+import { assertServerOwner, findServerByChannel } from '../utils/ownership.js';
 import { CreateVoiceChannelRequest, UpdateVoiceChannelRequest } from '../types/index.js';
 
 const voiceChannelService = {
@@ -21,7 +22,13 @@ const voiceChannelService = {
     });
   },
 
-  async updateVoiceChannel(id: string, data: UpdateVoiceChannelRequest): Promise<IVoiceChannelDocument> {
+  async updateVoiceChannel(
+    id: string,
+    data: UpdateVoiceChannelRequest,
+    requesterId: string,
+  ): Promise<IVoiceChannelDocument> {
+    assertServerOwner(await findServerByChannel(id), requesterId, 'Voice channel not found');
+
     const channel = await VoiceChannelModel.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
@@ -34,7 +41,9 @@ const voiceChannelService = {
     return channel;
   },
 
-  async deleteVoiceChannel(id: string): Promise<IVoiceChannelDocument> {
+  async deleteVoiceChannel(id: string, requesterId: string): Promise<IVoiceChannelDocument> {
+    assertServerOwner(await findServerByChannel(id), requesterId, 'Voice channel not found');
+
     const channel = await VoiceChannelModel.findByIdAndDelete(id);
     if (!channel) {
       throw new ApiError(404, 'Voice channel not found');

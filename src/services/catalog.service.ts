@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import CatalogModel, { ICatalogDocument } from '../models/catalog.model.js';
 import ApiError from '../utils/ApiError.js';
+import { assertServerOwner, findServerByCatalog } from '../utils/ownership.js';
 import { CreateCatalogRequest, UpdateCatalogRequest } from '../types/index.js';
 
 const catalogService = {
@@ -23,7 +24,18 @@ const catalogService = {
     });
   },
 
-  async updateCatalog(id: string, data: UpdateCatalogRequest): Promise<ICatalogDocument> {
+  async updateCatalog(
+    id: string,
+    data: UpdateCatalogRequest,
+    requesterId: string,
+  ): Promise<ICatalogDocument> {
+    const catalog = await CatalogModel.findById(id);
+    if (!catalog) {
+      throw new ApiError(404, 'Catalog not found');
+    }
+
+    assertServerOwner(await findServerByCatalog(id), requesterId);
+
     const updateData: Record<string, unknown> = {};
 
     if (data.title !== undefined) updateData.title = data.title;
@@ -31,23 +43,28 @@ const catalogService = {
       updateData.channelIds = data.channelIds.map((c) => new mongoose.Types.ObjectId(c));
     }
 
-    const catalog = await CatalogModel.findByIdAndUpdate(id, updateData, {
+    const updated = await CatalogModel.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
 
-    if (!catalog) {
+    if (!updated) {
       throw new ApiError(404, 'Catalog not found');
     }
 
-    return catalog;
+    return updated;
   },
 
-  async deleteCatalog(id: string): Promise<ICatalogDocument> {
-    const catalog = await CatalogModel.findByIdAndDelete(id);
+  async deleteCatalog(id: string, requesterId: string): Promise<ICatalogDocument> {
+    const catalog = await CatalogModel.findById(id);
     if (!catalog) {
       throw new ApiError(404, 'Catalog not found');
     }
+
+    assertServerOwner(await findServerByCatalog(id), requesterId);
+
+    await CatalogModel.findByIdAndDelete(id);
+
     return catalog;
   },
 };
